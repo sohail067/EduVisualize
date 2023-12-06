@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content-section" style="color:white">
+    <form method="POST" action="{{ url_for('join_class') }}">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4" style="color:white">Join Class</legend>
+            <div class="form-group" style="color:white">
+                {{ form.join_code.label(class="form-control-label") }}
+                {% if form.join_code.errors %}
+                {{ form.join_code(class="form-control form-control-lg is-invalid", placeholder="Enter Join Code") }}
+                <div class="invalid-feedback">
+                    {% for error in form.join_code.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.join_code(class="form-control form-control-lg", placeholder="Enter Join Code") }}
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-outline-info">Join Class</button>
+        </fieldset>
+    </form>
+    <a href="{{ url_for('home') }}" style="color:white">Back to Home</a>
+</div>
+{% endblock %}

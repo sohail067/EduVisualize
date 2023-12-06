@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4" style="color:white">Log In</legend>
+            <!-- Update field labels and placeholders -->
+            <div class="form-group" style="color:white">
+                {{ form.username.label(class="form-control-label") }}
+                {% if form.username.errors %}
+                {{ form.username(class="form-control form-control-lg is-invalid",placeholder="ex:21001-CS-001") }}
+                <div class="invalid-feedback">
+                    {% for error in form.username.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.username(class="form-control form-control-lg",placeholder="ex:21001-CS-001") }}
+                {% endif %}
+            </div>
+            <!-- ... rest of the form ... -->
+
+            <div class="form-group" style="color:white">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                {{ form.password(class="form-control form-control-lg is-invalid",placeholder="Enter Password") }}
+                <div class="invalid-feedback">
+                    {% for error in form.password.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.password(class="form-control form-control-lg",placeholder="Enter Password") }}
+                {% endif %}
+            </div>
+            <!--div class="form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
+                </div-->
+        </fieldset>
+
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        <!--- <small class="text-muted ml-2">
+                <a href="#">Forgot Password?</a>
+            </small>-->
+    </form>
+    <fieldset class="form-group">
+        <div class="border-top pt-3">
+            <small style="color:rgb(255, 255, 255,0.5)">
+                Need An Account? <a class="ml-2" style="color:white" href="{{ url_for('register') }}">Sign Up Now</a>
+            </small>
+        </div>
+    </fieldset>
+</div>
+
+{% endblock content %}

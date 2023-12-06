@@ -1,0 +1,63 @@
+<!-- feedback.html -->
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="content-section" style="color: white;">
+    <fieldset>
+
+{% for video_data in video_info %}
+<button onclick="toggleDisplay('title{{ loop.index }}')" class="btn-primary"
+                        style="color: white;">
+                        {{ video_data['video_title'] }} 
+</button> 
+{% endfor %}
+{% for video_data in video_info %}
+<fieldset id="title{{ loop.index }}" style="display: none;">
+    <legend>{{ video_data['video_title'] }}</legend>
+    <table border="5px" width="70%">
+        <thead>
+            <tr style="text-align: center;">
+                <th width="33%">Part Number</th>
+                <th width="33%">Attempts</th>
+                <th>Max Marks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(video_data['parts']|length) %}
+            <tr style="text-align: center;">
+                <td>{{ video_data['parts'][i] }}</td>
+                <td>{{ video_data['attempts'][i] }}</td>
+                <td>{{ video_data['correct_choices'][i] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <button class="btn-danger" onclick="toggleDisplay('details{{ loop.index }}')" style="background-color: black;">Details</button>
+    <fieldset id="details{{ loop.index }}" style="display: none;">
+    <h3>Feedback for {{ student_name }}</h3>
+    <ul>        
+        {% for message in feedback_messages[video_data['post_id']] %}
+    
+        <li>{{ message }}</li>
+            
+        {% endfor %}
+    </ul>
+</fieldset>
+</fieldset>
+{% endfor %}
+</fieldset>
+
+</div>
+
+<script>
+    function toggleDisplay(elementId) {
+        var element = document.getElementById(elementId);
+        if (element.style.display === "none" || element.style.display === "") {
+            element.style.display = "block";
+        } else {
+            element.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

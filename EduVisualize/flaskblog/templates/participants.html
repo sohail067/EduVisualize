@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section" style="color: white;">
+    <h1>Participants</h1>
+    {% for id, class_info in class_students.items() %}
+    {% if class_id == id %}
+    <fieldset>
+        <legend>{{ class_info.class_name }} </legend> 
+        <fieldset style="border: 2px solid black;">
+            <legend>Teacher</legend>
+            {{ class_info.students[0].student_name }} 
+
+        </fieldset>
+        <br>
+        <fieldset style="border: 2px solid black;">
+            <legend>Students  - {{(class_info.students | length)-1}}</legend>
+
+        <ol>
+            {% for student in class_info.students %}
+            
+            {% if student.student_id != current_user.id %}  
+            <li>
+                    <p style="color: white;padding-left: 20px;margin-bottom:0px;">
+                        {{ student.student_name }} 
+                    </p>                
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ol>
+    </fieldset>
+
+    </fieldset>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

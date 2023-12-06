@@ -1,0 +1,17 @@
+<!-- responses.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section" style="color: white;">
+<h1>Student Responses</h1>
+<ul>
+    {% for student_name in student_names %}
+    {% if student_name.id != current_user.id %}
+
+        <li><a href="{{ url_for('view_feedback', class_id=class_id, student_name=student_name) }}" style="color: white;">{{ student_name }}</a>
+        </li>
+        {% endif %}
+
+    {% endfor %}
+</ul>
+</div>
+{% endblock %}

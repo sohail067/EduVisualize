@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <div>
+      {% if current_user.user_type == 'teacher' %}
+      <form action="{{ url_for('create_class') }}" method="POST" class="btn-form">
+        <button type="submit" class="btn btn-outline-info" style="position: fixed; bottom:40px; right:50px;background:white;">➕</button>
+        </form>
+        {% else %}
+        <form action="{{ url_for('join_class') }}" method="POST" class="btn-form">
+          <button type="submit" class="btn btn-outline-info" style="position: fixed;bottom:40px; right:50px;background:white;">➕</button>
+          </form>
+        {% endif %}
+    </div>
+<div style="display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+grid-gap: 20px;">
+{% for aclass in user_classes %}
+  <article class="media content-section" style="margin-right: 10px; width: 370px;">
+  <img class="rounded-circle article-img" src="{{ url_for('static', filename='class1.png') }}">
+  <div class="media-body">
+    <div>
+      <a class="mr-2" style="color:white" href="#">{{ aclass.teacher_name }}</a>
+      <small style="color:rgba(255, 255, 255, 0.5)">{{ aclass.date_created.strftime('%d-%m-%Y') }}</small>
+    </div>
+    <div class="article-metadata">
+      {% if aclass.id %}
+      {% if current_user.is_teacher and current_user.id == aclass.teacher_id %}
+    <a style="float:right;" href="{{ url_for('participants',class_id=aclass.id) }}"><img
+            src="{{ url_for('static', filename='participants.jpg') }}" class="a-participants"></a>
+    <small class="text-muted">{{aclass.joincode}}</small>
+    <a style="float:right;background-color: black; font-size: small; width: 37px;
+    height: 37px;margin-right:5px;padding-left:9px;" href="{{ url_for('delete_class',class_id=aclass.id) }}"class="btn btn-danger">❌</a>
+    {% endif %}
+      <h2><a class="article-title" style="color:white" href="{{ url_for('class_posts', class_id=aclass.id) }}">{{
+          aclass.name }}</a></h2>
+      {% else %}
+      <h2>{{ aclass.name }}</h2>
+      {% endif %}
+    </div>
+    <br>
+    <div style="display:inline-block;">
+      {% if current_user.is_teacher and current_user.id == aclass.teacher_id %}
+      {% if aclass.id %}
+      <form action="{{ url_for('new_post', class_id=aclass.id) }}" method="POST" class="btn-form" >
+        <button type="submit" class="btn btn-primary" style="background-color:black ">New Post</button>
+      </form>
+      <form action="{{ url_for('responses',class_id=aclass.id) }}" method="GET" class="btn-form">
+      <a><button class="btn btn-danger" style="background-color:black;">Responses</button></a>
+    </form>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</article>
+{% endfor %}
+</div>
+
+{% endblock %}

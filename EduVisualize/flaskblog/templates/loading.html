@@ -1,0 +1,25 @@
+<!-- templates/loading.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <div class="loading-screen">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+    </div>
+    <script>
+        var visited = localStorage.getItem('visited');
+        if (!visited) {
+            localStorage.setItem('visited', true);
+            setTimeout(function () {
+                window.location.href = "{{ url_for('login') }}";
+            }, 10000); // Delay for 10 seconds before redirecting
+        } else {
+            window.location.href = "{{ url_for('login') }}";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!-- dashboard.html -->
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section" style="color: white;">
+    <h2>Your Performance</h2>
+    <p>Overall Accuracy: <span id="accuracy" style="color:aqua;"></span></p>
+    <canvas id="performance-chart" width="400" height="200"
+        style="color:rgb(55, 248, 132);background-color: rgba(247, 244, 226, 0.7);border: 3px solid rgb(254, 74, 74);"></canvas>
+    <br>
+
+    {% if class_data %}
+    <ul>
+        {% for class_name, data in class_data.items() %}
+        <fieldset style="border: 3px solid black;">
+            <legend onclick="toggleDisplay('class_{{ loop.index }}')">{{ class_name }}</legend>
+            <div id="class_{{ loop.index }}" style="display: none;">
+                {% for post_id, post_info in data.post_data.items() %}
+                <li style="margin-left: 30px;">
+                    <p>{{ post_info.title }}</p>
+                    <table border="5px">
+                        <thead>
+                            <tr>
+                                <th>Part Number</th>
+                                <th>Correctness Rate (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for part_number, part_data in post_info['parts'].items() %}
+                            <tr>
+                                <td>Part {{ part_number }}</td>
+                                <td>{{ part_data.correctness_rate }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </li>
+                {% endfor %}
+            </div>
+        </fieldset>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You haven't joined any class yet.</p>
+    {% endif %}
+</div>
+
+<script type="text/javascript">
+    // Get the correctness_rate from the HTML
+    // Extract class data from the HTML
+    var classData = JSON.parse('{{ class_data | tojson | safe }}');
+
+    var labels = ['Overall Accuracy'];
+    var dataValues = [0];
+    var backgroundColors = ['rgb(55, 248, 132)'];
+
+    for (var classKey in classData) {
+        if (classData.hasOwnProperty(classKey)) {
+            labels.push(classKey);
+            // Calculate the overall correctness rate for the class
+            var classCorrectnessRate = 0;
+            var partCount = 0;
+            for (var postKey in classData[classKey]['post_data']) {
+                for (var partKey in classData[classKey]['post_data'][postKey]['parts']) {
+                    classCorrectnessRate += parseFloat(classData[classKey]['post_data'][postKey]['parts'][partKey].correctness_rate);
+                    partCount++;
+                }
+            }
+            if (partCount > 0) {
+                classCorrectnessRate = classCorrectnessRate / partCount;
+            }
+            dataValues.push(classCorrectnessRate);
+            backgroundColors.push('rgba(251, 232, 109, 0.7)');
+        }
+    }
+
+    var sum = 0.0;
+    var l = dataValues.length
+    for (var i = 1; i < dataValues.length; i++) {
+        sum += dataValues[i];
+        if (dataValues[i] == 0)
+            l -= 1;
+        console.log("Sum:" + sum);
+    }
+    console.log(l);
+    dataValues[0] = sum / (l - 1);
+    var accuracy =Math.round(dataValues[0]*100)/100;
+    document.getElementById('accuracy').innerHTML = accuracy + "%";
+    // console.log(dataValues);
+
+    labels = labels.slice(0, 1).concat(labels.slice(1).reverse());
+    dataValues = dataValues.slice(0, 1).concat(dataValues.slice(1).reverse());
+    backgroundColors = backgroundColors.slice(0, 1).concat(backgroundColors.slice(1).reverse());
+
+
+    var ctx = document.getElementById('performance-chart').getContext('2d');
+    var performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Accuracy (%)',
+                data: dataValues,
+                backgroundColor: backgroundColors,
+                borderColor: 'rgba(255,255,255, 1)',
+                borderWidth: 2,
+                barPercentage: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    color: 'rgba(255, 255, 255, 1)'
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    color: 'rgba(255, 255, 255, 1)'
+                }
+            }
+        }
+    });
+
+    function toggleDisplay(elementId) {
+        var element = document.getElementById(elementId);
+        if (element.style.display === "none" || element.style.display === "") {
+            element.style.display = "block";
+        } else {
+            element.style.display = "none";
+        }
+    }
+</script>
+
+{% endblock %}

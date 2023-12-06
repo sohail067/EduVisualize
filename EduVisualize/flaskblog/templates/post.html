@@ -1,0 +1,407 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="content-section"
+    style="border: 3px rgb(244, 70, 148); border-style: dotted; padding: 10px; background-color: rgb(0, 0, 0,0.7)">
+    <div>
+        <a href="{{ url_for('home') }}" class="btn btn-outline-info" style="float: right;">Back to Home</a>
+        <h2 style="color: rgb(47, 157, 194);">{{ selected_class.name }}</h2>
+    </div>
+</article>
+<article class="media content-section" style="color: white; ">
+    <img class="rounded-circle article-img"
+        src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+    <div class="media-body">
+        <div class="article-metadata">
+            <a class="mr-2"
+                href="{{ url_for('new_post', class_id=selected_class.id, username=post.author.username) }}">{{
+                post.author.username }}</a>
+            <small class="text-muted">{{ post.date_posted.strftime('%d-%m-%Y') }}</small>
+            {% if post.author == current_user %}
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1"
+                    href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
+                <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete_post', post_id=post.id) }}">Delete</a>
+            </div>
+            {% endif %}
+        </div>
+        <h2 class="article-title">{{ post.title }}</h2>
+        <p class="article-content">{{ post.content }}</p>
+        {% if post.video %}
+        {% if current_user.is_teacher or response_exists %}
+        <div class="video-container">
+            <video id="video" width="500" height="400" controlsList="nodownload" controls="true">
+                <source src="{{ url_for('static', filename='post_videos/' + post.video) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        {% else %}
+        <div class="video-container" id="video-container">
+            <div>
+                <button class="btn btn-danger" style="background-color: black;" onclick="startOver('video')">Start
+                    Over</button>
+                <button class="btn btn-primary" style="background-color: black;" onclick="lastResume('video')">Resume
+                </button>
+                <p>click on resume to continue from the interval where you left off.</p>
+            </div>
+            <video id="video" width="500" height="400" controlsList="nodownload" class="custom-video"
+                onplay="showFeedbackAtIntervals('video');">
+                <source src="{{ url_for('static', filename='post_videos/' + post.video) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div id="controls" class="controls">
+                <button class="btn btn-primary" style="background-color: black;"
+                    onclick="skipBackward('video')">-10s</button>
+                <button class="btn btn-danger" style="background-color: black;"
+                    onclick="togglePlayPause('video')">⏯️</button>
+
+                <button class="btn btn-primary" style="background-color: black;"
+                    onclick="toggleFullScreen('video')">Full Screen</button>
+            </div>
+
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</article>
+<div class="comment-section">
+    <h3>Comments</h3>
+    <form action="{{ url_for('add_comment', post_id=post.id) }}" method="POST">
+        <textarea name="text" placeholder="Add your comment" required></textarea>
+        <button style="margin-left: 520px; margin-top: 10px;" type="submit">Add Comment</button>
+    </form>
+    <h6>_______________________________________________________________________________________________________</h6>
+    <ul>
+        {% for comment in post.comments %}
+        <li style="color: white;">{{ comment.author.username }}: {{ comment.text }}<small class="text-muted">
+                - {{ comment.date_posted.strftime('%d-%m-%Y') }}</small></li>
+        {% endfor %}
+    </ul>
+</div>
+</div>
+{% if current_user.is_teacher %}
+<div class="content-container">
+    <fieldset class="content-fieldset">
+        <big class="text-muted">Questions - {{ post.title }}</big>
+        {% for i in range(intervals_length) %}
+        <h5 style="color: tomato;">Interval-{{i+1}}</h5>
+        {% for j in range((i*3),(i*3)+3) %}
+        <p>Question-{{questions[j]}}</p>
+        <p>Answer-{{answers[j]}}</p>
+        <br>
+        {% endfor %}
+        {% endfor %}
+    </fieldset>
+</div>
+{% else %}
+{% if response_exists %}
+<div class="content-container">
+    <fieldset class="content-fieldset">
+        <big class="text-muted">Questions - {{ post.title }}</big>
+        <h5>You have already attempted questions on this complete video</h5>
+    </fieldset>
+</div>
+{% else %}
+<div class="content-container">
+    <fieldset class="content-fieldset">
+        <big class="text-muted">Questions
+        </big>
+        <div id="interval-feedback" class="feedback-box" style="display: none;">
+            <form method="post" id='question-container'></form>
+
+        </div>
+    </fieldset>
+
+    <fieldset class="content-fieldset">
+        <big class="text-muted">Answers</big>
+        <div id="interval-feedback2" class="feedback-box" style="display: none;">
+            Title:- {{ post.title }}
+            <div id='answer-container'></div>
+
+            <button id="ok-button" class="btn-primary" style="background-color: black;">OK</button>
+        </div>
+    </fieldset>
+</div>
+{% endif %}
+{% endif %}
+<script>
+    var questionsData = JSON.parse('{{ questions | tojson | safe }}');
+    var optionsData = JSON.parse('{{ options | tojson | safe }}');
+    var answersData = JSON.parse('{{ answers | tojson | safe }}');
+    var currentInterval = -1;
+    var interval = 0;
+    var correctCount = 0;
+    var selectedAnswers = [];
+    var timestamp = parseFloat('{{timestamp}}');
+    var intervals = new Array();
+    var temp = ('{{ intervals }}').toString();
+    intervals = temp.split(',').map(str => parseInt(str, 10));
+
+    function skipBackward(videoId) {
+        const video = document.getElementById(videoId);
+        video.currentTime -= 10;
+    }
+    function startOver(videoId) {
+        const video = document.getElementById(videoId);
+        video.currentTime = 0;
+        video.play();
+    }
+
+    function lastResume(videoId) {
+        const video = document.getElementById(videoId);
+        showFeedbackAtIntervals(videoId);
+        console.log(timestamp);
+        for (var i = 0; i < 5; i++) {
+            if (timestamp >= intervals[i]) {
+
+                video.currentTime = intervals[i] + 1.5;
+                video.play();
+                break;
+            }
+            else
+                video.play();
+        }
+    }
+
+    function togglePlayPause(videoId) {
+        const video = document.getElementById(videoId);
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+
+    function toggleFullScreen(videoId) {
+        const video = document.getElementById(videoId);
+        if (!document.fullscreenElement) {
+            video.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function showFeedbackAtIntervals(videoId) {
+        const video = document.getElementById(videoId);
+        const videoDuration = video.duration;
+        const intervalDuration = parseInt(videoDuration / 5);
+        var x = intervalDuration;
+        let lastCheckedTime = -1;
+        setInterval(function () {
+            const currentTime = Math.floor(video.currentTime);
+            if (currentTime !== lastCheckedTime) {
+                lastCheckedTime = currentTime;
+
+                const i = intervals.indexOf(currentTime);
+                //console.log(intervals + currentTime + i);
+                if (i !== -1) {
+                    currentInterval = i;
+                    video.pause();
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    }
+                    updateQuestionsForInterval(i);
+                }
+            }
+        }, 1000);
+    }
+
+    function updateQuestionsForInterval(i) {
+        video.pause();
+        video.removeAttribute("controls");
+        var divElement = document.querySelector('#controls');
+        divElement.style.display = 'none';
+        const feedbackBox = document.getElementById('interval-feedback');
+        feedbackBox.style.display = 'block';
+        const questionContainer = document.getElementById('question-container');
+        questionContainer.innerHTML = '';
+        const startQuestionIndex = i * 3;
+        var startOptionIndex = i * 12;
+        const partElement = document.createElement('h2')
+        const partno = i + 1;
+        partElement.textContent = `Part : ${partno}`;
+        questionContainer.appendChild(partElement);
+        if (i >= 0 && startQuestionIndex < questionsData.length) {
+            for (let j = startQuestionIndex; j < startQuestionIndex + 3; j++) {
+                const questionElement = document.createElement('div');
+
+                const question = questionsData[j];
+                const options = optionsData.slice(startOptionIndex, startOptionIndex + 4);
+                startOptionIndex += 4;
+                const questionText = document.createElement('p');
+                questionText.textContent = `${question}`;
+                questionElement.appendChild(questionText);
+
+                const optionsList = document.createElement('ul');
+                options.forEach((option, optionIndex) => {
+                    const optionItem = document.createElement('li');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `question${j + 1}`;
+                    radio.value = option;
+                    radio.id = `q${j + 1}option${optionIndex + 1}`;
+                    radio.required = true;
+                    const label = document.createElement('label');
+                    label.textContent = `${option}`;
+                    label.setAttribute('for', `q${j + 1}option${optionIndex + 1}`);
+                    optionItem.appendChild(radio);
+                    optionItem.appendChild(label);
+                    optionsList.appendChild(optionItem);
+                });
+                questionElement.appendChild(optionsList);
+                questionContainer.appendChild(questionElement);
+            }
+        }
+        const button = document.createElement('submit-button');
+        button.id = 'submit-button';
+
+        button.textContent = 'SUBMIT';
+
+        // Add a class to the button
+        button.classList.add('btn', 'btn-danger');
+
+        // Set inline styles for the button
+        button.style.backgroundColor = 'black';
+        button.style.color = 'white';
+
+        // Define the onclick event handler function
+        button.onclick = function () {
+            const videoDuration = video.duration;
+            selectedAnswers = [];
+            const correctAnswers = answersData.slice(currentInterval * 3, currentInterval * 3 + 3);
+            var i = 0;
+            for (let j = currentInterval * 3; j < currentInterval * 3 + 3; j++) {
+                let selectedOption = '';
+                for (let k = 1; k <= 4; k++) {
+                    const radio = document.getElementById(`q${j + 1}option${k}`);
+                    if (radio.checked) {
+                        selectedOption = `${i + 1}. ${radio.value}`;
+                        break;
+                    }
+                }
+                i++;
+                selectedAnswers.push(selectedOption);
+            }
+            console.log(selectedAnswers);
+            console.log(correctAnswers);
+
+            correctCount = selectedAnswers.filter((selected, index) => {
+                const selectedNoSpaces = selected.replace(".", "");
+                const correctNoSpaces = correctAnswers[index].replace(".", "");
+                console.log("Comparison:\n"+selectedNoSpaces+"..\n"+correctNoSpaces+"..");
+                return selectedNoSpaces === correctNoSpaces;
+            }).length;
+
+            video.pause();
+
+            const feedbackBox = document.getElementById('interval-feedback');
+            feedbackBox.style.display = 'none';
+            const answerContainer = document.getElementById('answer-container');
+            answerContainer.innerHTML = `You got ${correctCount} out of 3 correct.`;
+            const feedbackBox2 = document.getElementById('interval-feedback2');
+            feedbackBox2.style.display = 'block';
+            if (currentInterval > 0) {
+                var x = parseInt(intervals[currentInterval]);
+                var y = parseInt(intervals[currentInterval - 1]);
+                interval = x - y;
+            }
+            else
+                interval = parseInt(intervals[0]);
+            console.log(interval + isNaN(interval) + isFinite(interval));
+            document.getElementById('ok-button').addEventListener('click', function () {
+                submitAnswersAndResume('video', interval, selectedAnswers, correctCount);
+                console.log(interval + isNaN(interval) + isFinite(interval));
+
+            });
+        };
+        questionContainer.appendChild(button);
+
+    }
+
+    function submitAnswersAndResume(videoId, interval, selectedAnswers, correctCount) {
+        const video = document.getElementById(videoId);
+
+        if (correctCount === 3) {
+            video.currentTime += 0.2;
+            video.play();
+        } else {
+            video.currentTime = (video.currentTime - interval) + 1.5;
+            video.play();
+        }
+        var divElement = document.querySelector('#controls');
+        divElement.style.display = 'flex';
+        const feedbackBox2 = document.getElementById('interval-feedback2');
+        feedbackBox2.style.display = 'none';
+
+        const selectedAnswersInput = JSON.stringify(selectedAnswers);
+        const partNumberInput = currentInterval + 1;
+
+        const baseURL = window.location.origin;
+        let classID = parseInt("{{ selected_class.id }}");
+        let postID = parseInt("{{ post.id }}");
+        const flaskURL = `${baseURL}/store_responses/${classID}/${postID}`;
+        fetch(flaskURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                part_number: partNumberInput,
+                selected_answers: selectedAnswersInput,
+                correctCount: correctCount
+            })
+        })
+            .then(response => {
+                // Handle the response from the server if needed
+                if (response.status === 200) {
+                    console.log('Answers recorded successfully');
+                    console.log(partNumberInput + "  " + selectedAnswersInput + " " + correctCount);
+
+                } else {
+                    console.error('Error recording answers');
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        const video = document.getElementById('video');
+        const partNumber = currentInterval + 1; // The current interval
+        const currentTime = Math.floor(video.currentTime);
+        sendTimestampOnCloseOrRefresh(partNumber, currentTime);
+    });
+
+    function sendTimestampOnCloseOrRefresh(partNumber, timestamp) {
+        const baseURL = window.location.origin;
+        let classID = parseInt("{{ selected_class.id }}");
+        let postID = parseInt("{{ post.id }}");
+        const flaskURL = `${baseURL}/store_video_timestamp/${classID}/${postID}`;
+
+        fetch(flaskURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                part_number: partNumber,
+                timestamp: timestamp
+            })
+        })
+            .then(response => {
+                // Handle the response from the server if needed
+                if (response.status === 200) {
+                    console.log('Video timestamp recorded successfully');
+                } else {
+                    console.error('Error recording video timestamp');
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+    }
+
+</script>
+{% endblock %}

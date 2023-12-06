@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="content-section" style="width:1080px;">
+    {% if current_user.is_teacher and current_user.id == selected_class.teacher_id %}
+    <a style="float:right;" href="{{ url_for('participants',class_id=selected_class.id) }}"><img
+            src="{{ url_for('static', filename='participants.jpg') }}" class="a-participants"></a>
+    {% endif %}
+
+    <h1 style="color: white;">{{ selected_class.name }} </h1>
+
+    <div style="color: white;" >
+        <div class="class-info">
+            <p><b>Teacher:</b> {{ selected_class.teacher_name }} <b style="margin-left:160px;">CODE:</b> {{selected_class.joincode}}</p>
+            <p><b>Date Created:</b> {{ selected_class.date_created.strftime('%d-%m-%Y') }} <b style="margin-left:100px;">Total videos:</b> {{ total_posts }}</p>
+        </div>
+        <div>
+
+            {% if selected_class.id %}
+
+            <form action="{{ url_for('new_post', class_id=selected_class.id) }}" method="POST" class="btn-form-1">
+                {% if current_user.is_teacher and current_user.id == selected_class.teacher_id %}
+                <button type="submit" class="btn btn-danger" style="background-color:black ">Add a New Post</button>
+                {% endif %}
+                <a href="{{ url_for('home') }}" class="btn btn-primary" style="background-color: black;">Back to Home</a>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</article>
+
+<div style="display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+grid-gap: 20px;">
+<div>
+    <div class="posts" style="color: white;">
+        {% for post in posts %}
+        <hr>
+        <article class="media content-section">
+            <img class="rounded-circle article-img"
+                src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2"
+                        href="{{ url_for('new_post', class_id=selected_class.id, username=post.author.username) }}">{{
+                        post.author.username }}</a>
+
+                    <small class="text-muted">{{ post.date_posted.strftime('%d-%m-%Y') }}</small>
+                    {% if post.author == current_user %}
+                    <div>
+                        <a class="btn btn-secondary btn-sm mt-1 mb-1"
+                            href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
+                        <a class="btn btn-danger btn-sm m-1" href="{{ url_for('delete_post', post_id=post.id) }}">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <h2 class="article-title">{{ post.title }}</h2>
+                {% if post.video %}
+                <div class="video-container">
+                    <video id="video{{ loop.index }}" width="200" height="100" controlsList="nodownload"
+                        class="custom-video"
+                        onplay="redirectOnVideoPlay('video{{ loop.index }}','{{ post.id }}');">
+                        <source src="{{ url_for('static', filename='post_videos/' + post.video) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="controls" style="background:rgb(0,0,0,0);">
+                        <button class="btn btn-danger" style="background-color:black;" onclick="redirectOnVideoPlay('video{{ loop.index }}','{{ post.id }}');">VISIT VIDEO</button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+    <br>
+    {% if total_posts != 0 %}
+    <!-- <a href="{{ url_for('home') }}" class="btn btn-secondary" style="position:static;">Back to Home</a> -->
+    {% endif %}
+</div>
+</div>
+
+<script>
+
+    function redirectOnVideoPlay(videoId, postId) {
+        const video = document.getElementById(videoId);
+        window.location.href = `/class/{{ selected_class.id }}/${postId}`;
+    }
+
+    function togglePlayPause(videoId) {
+        const video = document.getElementById(videoId);
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    } 
+</script>
+
+{% endblock %}

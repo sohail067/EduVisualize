@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section" style="color:white;">
+    <form method="POST" action="" enctype="multipart/form-data" id="postForm">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="class_id" value="{{ class_id }}">
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <div class="form-group">
+                {{ form.title.label(class="form-control-label") }}
+                {{ form.title(class="form-control form-control-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.content.label(class="form-control-label") }}
+                {{ form.content(class="form-control form-control-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.video.label(class="form-control-label") }}
+                {{ form.video(class="form-control-file", id="videoUpload") }}
+            </div>
+            <div class="form-group">
+                {{ form.num_topics.label(class="form-control-label") }}
+                {{ form.num_topics(class="form-control form-control-lg", id="numTopics") }}
+            </div>
+
+            <div id="videoContainer" style="display: none;">
+                <video id="videoPlayer" controls width="450" height="250" style="margin-left:40px;"></video>
+                <button type="button" class="btn btn-primary" id="selectTimestampButton"
+                        style="background-color: black;margin-left:350px;">Add Timestamp
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="timestamps" class="form-control-label">Selected Topics (ends at)</label>
+                <fieldset>
+                    <ul id="timestamps">
+                        <!-- This is where selected timestamps will appear -->
+                    </ul>
+                </fieldset>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-danger" id="postButton" style="background-color:black;">Upload This Post</button>
+            </div>
+        </fieldset>
+    </form>
+</div>
+<a href="#timestamps" class="btn btn-outline-info" style="position: fixed; bottom:30px; right:450px;background:black;">Move to Post</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const videoUpload = document.getElementById("videoUpload");
+        const numTopics = document.getElementById("numTopics");
+        const timestampsList = document.getElementById("timestamps");
+        const videoContainer = document.getElementById("videoContainer");
+        const videoPlayer = document.getElementById("videoPlayer");
+        const selectTimestampButton = document.getElementById("selectTimestampButton");
+        const postButton = document.getElementById("postButton");
+
+        // Variable to store selected timestamps
+        const selectedTimestamps = [];
+
+        // Function to display selected timestamps
+        function displaySelectedTimestamps() {
+            timestampsList.innerHTML = "";
+            if (selectedTimestamps.length > 1) {
+                selectedTimestamps.sort((a, b) => a - b);
+            }
+
+            selectedTimestamps.forEach((timestamp, index) => {
+                const listItem = document.createElement("li");
+                const br = document.createElement("br");
+                listItem.textContent = `Topic ${index + 1} : ${timestamp} seconds`;
+                timestampsList.appendChild(listItem);
+                timestampsList.appendChild(br);
+
+                // Add an "Edit" button for each timestamp
+                const editButton = document.createElement("button");
+                editButton.textContent = "Edit";
+                editButton.style.backgroundColor = "black";
+                editButton.classList.add('btn', 'btn-danger');
+                editButton.style.color = 'white';
+
+                editButton.addEventListener("click", () => editTimestamp(index));
+                listItem.appendChild(editButton);
+            });
+
+            console.log(selectedTimestamps);
+        }
+
+        function editTimestamp(index) {
+            const newTimestamp = prompt("Edit the timestamp (in seconds):", selectedTimestamps[index]);
+            if (newTimestamp !== null && !isNaN(newTimestamp)) {
+                selectedTimestamps[index] = parseInt(newTimestamp);
+                displaySelectedTimestamps();
+            }
+        }
+
+        // Event listener for video upload to display video
+        videoUpload.addEventListener("change", function () {
+            const videoFile = videoUpload.files[0];
+            const videoURL = URL.createObjectURL(videoFile);
+            videoPlayer.src = videoURL;
+            videoContainer.style.display = "block";
+
+        });
+
+        // Event listener for timestamp selection
+        selectTimestampButton.addEventListener("click", function () {
+            if (numTopics.value === "") {
+                alert("Please enter the number of topics first.");
+                return;
+            }
+            const timestamp = Math.floor(videoPlayer.currentTime);
+            if (selectedTimestamps.length < parseInt(numTopics.value)) {
+                selectedTimestamps.push(timestamp);
+                displaySelectedTimestamps();
+            }
+            if (selectedTimestamps.length === parseInt(numTopics.value)) {
+                // Disable further timestamp selection
+                selectTimestampButton.style.display = "none";
+            }
+        });
+
+        // Event listener for posting the form
+        postButton.addEventListener("click", function () {
+            if (numTopics.value === "" || selectedTimestamps.length < parseInt(numTopics.value)) {
+                alert("Please select the required number of timestamps.");
+                return;
+            }
+            // Fill the hidden timestamps field with the selected timestamps
+            const timestampsField = document.createElement("input");
+            timestampsField.type = "hidden";
+            timestampsField.name = "timestamps";
+            timestampsField.value = selectedTimestamps.join(",");
+            document.getElementById("postForm").appendChild(timestampsField);
+
+            // Submit the form
+            document.getElementById("postForm").submit();
+        });
+    });
+
+</script>
+{% endblock content %}

@@ -1,0 +1,328 @@
+/* Default styles that apply to all screen sizes */
+body {
+  background-image: url("2.jpg");
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  color: #333333;
+  margin-top: 7rem;
+  font-size: 16px; /* Default font size */
+}
+
+h1, h2, h4, h5, h6 {
+  color: white;
+}
+
+h3 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.bg-steel {
+  background-color:rgb(116, 21, 21);
+  border:1px solid rgb(248, 192, 192) ;
+  border-radius: 10px;
+}
+.site-header .navbar-nav .nav-link {
+  color: #b5a8a8;
+}
+
+.site-header .navbar-nav .nav-link:hover {
+  color: #ffffff;
+}
+
+.site-header .navbar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.content-section {
+  background: rgba(244, 245, 249, 0);
+  padding: 10px 20px;
+  border: 3px solid #fbe9e9;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.article-title {
+  color: rgb(255, 255, 255);
+}
+
+a.article-title:hover {
+  color: #428bca;
+  text-decoration: none;
+}
+
+.article-content {
+  color: rgb(255, 255, 255);
+  white-space: pre-line;
+}
+
+.article-img {
+  height: 65px;
+  width: 65px;
+  margin-right: 16px;
+}
+
+.article-metadata {
+  padding-bottom: 1px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.article-metadata a:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+.article-svg {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+}
+
+.account-img {
+  height: 125px;
+  width: 125px;
+  margin-right: 20px;
+  margin-bottom: 16px;
+}
+
+.account-heading {
+  color: white;
+  font-size: 2.5rem;
+}
+
+.buttons-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.show-btn {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+fieldset {
+  border: 1px solid #111111;
+  padding: 10px;
+  background-color: rgba(85, 82, 82, 0.4);
+  border-radius: 5px;
+}
+
+legend {
+  font-weight: bold;
+}
+
+.btn-form {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.btn-form-2 {
+  display: inline-block;
+  margin-left: 300px;
+  margin-right: 10px;
+}
+
+.btn-form-3 {
+  display: inline-block;
+  margin-left: 500px;
+  margin-right: 10px;
+}
+
+.content-container {
+  border: 5px solid #100f0f;
+  color: white;
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 550px;
+  padding-top: 10px;
+  padding-left: 10px;
+}
+
+.content-fieldset {
+  display: block;
+  transition: max-height 0.5s ease;
+  max-height: 600px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border: 1px solid #111111;
+  color: white;
+}
+
+.content-container.active .content-fieldset {
+  height: 400px;
+}
+
+.content-container.minimized .content-fieldset {
+  display: none;
+  max-height: 0;
+}
+
+.toggle-content {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  height: 15px;
+}
+
+#minimize {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.logo-img {
+  height: 55px;
+  width: 65px;
+}
+
+.loading-screen {
+  position: absolute;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.logo {
+  background: fixed;
+  max-width: 150px;
+  animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 18px; /* Larger font size for smaller screens */
+  }
+  
+  /* Increase the size of other elements as needed */
+  .content-container {
+    width: 100%; /* Full width for smaller screens */
+    font-size: 20px; /* Larger font size for smaller screens */
+  }
+  
+}
+
+/* Responsive styles for larger screens */
+@media (min-width: 1200px) {
+  /* You can add responsive styles for larger screens here */
+}
+
+.comment-section {
+  background-color: #0d0d0d;
+  padding: 20px;
+  border: 3px solid #f9d2d2;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+/* Style the comments list */
+.comment-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.comment-section li {
+  margin-bottom: 10px;
+}
+
+/* Style the textarea for adding comments */
+.comment-section textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+/* Style the submit button */
+.comment-section button {
+  background-color: #1b9b9b;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 400px;
+}
+
+.comment-section button:hover {
+  background-color: #0056b3;
+}
+
+.a-participants{
+  width: 37px;
+  height: 37px;
+  border-radius:10px ;
+  border: limegreen 4px solid;
+}
+
+.video-container {
+  position: relative;
+  display: inline-block;
+}
+
+
+
+.controls {
+  position:absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.controls button {
+  margin: 0 10px;
+  padding: 5px 10px;
+}
+
+
+/* Hide video seeker in full-screen mode */
+.custom-video:-webkit-full-screen::-webkit-media-controls-timeline {
+  display: none;
+}
+
+.custom-video:-webkit-full-screen::cue-range {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  body {
+    font-size: 18px; 
+  }
+
+  
+  .content-container {
+    width: 33%; 
+    font-size: 20px; 
+  }
+
+}

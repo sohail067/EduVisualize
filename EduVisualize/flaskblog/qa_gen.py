@@ -1,7 +1,7 @@
 import openai
 
 def query_chat_gpt(query):
-    openai.api_key = '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'
+    openai.api_key = 'place your API key here'
 
     parameters = {
         'model': 'gpt-3.5-turbo',
